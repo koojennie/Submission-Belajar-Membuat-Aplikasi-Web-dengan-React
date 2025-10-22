@@ -31,6 +31,19 @@ pipeline {
             }
         }
 
+        stage('Run OpenSSF Scorecard') {
+            steps {
+                echo "Running OpenSSF Scorecard..."
+                sh '''
+                curl -L https://github.com/ossf/scorecard/releases/download/v5.3.0/scorecard_5.3.0_linux_amd64.tar.gz -o scorecard.tar.gz
+                tar -xzf scorecard.tar.gz
+                chmod +x scorecard
+                ./scorecard --repo=${GIT_URL} --format json > scorecard.json
+                echo "✅ OpenSSF Scorecard completed and saved to scorecard.json"
+                '''
+            }
+        }
+
         stage('Build React App') {
             steps {
                 sh 'npm install'
@@ -52,21 +65,21 @@ pipeline {
         stage('Prepare Ortelius Component File') {
             steps {
                 writeFile file: 'component.toml', text: """
-Application = "GLOBAL.CICD.NotesApp"
-Application_Version = "1.0.0"
+                Application = "GLOBAL.CICD.NotesApp"
+                Application_Version = "1.0.0"
 
-Name = "GLOBAL.CICD.NotesWebApp"
-Variant = "${env.GIT_BRANCH}"
-Version = "v1.0.0.${env.BUILD_NUMBER}-g${env.SHORT_SHA}"
+                Name = "GLOBAL.CICD.NotesWebApp"
+                Variant = "${env.GIT_BRANCH}"
+                Version = "v1.0.0.${env.BUILD_NUMBER}-g${env.SHORT_SHA}"
 
-[Attributes]
-    GitRepo = "${env.GIT_URL}"
-    GitCommit = "${env.GIT_COMMIT}"
-    DockerRepo = "${env.DOCKERREPO}"
-    DockerTag = "${env.IMAGE_TAG}"
-    ServiceOwner = "${env.DHUSER}"
-    ServiceOwnerEmail = "togetherforever1404@gmail.com"
-"""
+                [Attributes]
+                    GitRepo = "${env.GIT_URL}"
+                    GitCommit = "${env.GIT_COMMIT}"
+                    DockerRepo = "${env.DOCKERREPO}"
+                    DockerTag = "${env.IMAGE_TAG}"
+                    ServiceOwner = "${env.DHUSER}"
+                    ServiceOwnerEmail = "togetherforever1404@gmail.com"
+                """
             }
         }
 
@@ -89,7 +102,17 @@ Version = "v1.0.0.${env.BUILD_NUMBER}-g${env.SHORT_SHA}"
                 export DHURL=${DHURL}
                 export DHUSER=${DHUSER}
                 export DHPASS=${DHPASS}
-                ./dh updatecomp --rsp component.toml --deppkg "cyclonedx@cyclonedx.json"
+                ./dh updatecomp --rsp component.toml --deppkg "cyclonedx@cyclonedx.json" --deppkg "openssf@scorecard.json"
+                '''
+            }
+        }
+
+        stage('Deploy to Environment in Ortelius') {
+            steps {
+                echo "Deploying component to Ortelius Environment..."
+                sh '''
+                ./dh deploycomp --app GLOBAL.CICD.NotesApp --env GLOBAL.CICD.Dev --comp GLOBAL.CICD.NotesWebApp
+                echo "✅ Deployment record sent to Ortelius"
                 '''
             }
         }
