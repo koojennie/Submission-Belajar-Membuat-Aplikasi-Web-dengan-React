@@ -124,8 +124,7 @@ pipeline {
                 --appname GLOBAL.CICD.NotesApp \
                 --appversion 1.0.0 \
                 --deployenv GLOBAL.CICD.Dev \
-                --logdeployment \
-                --desc "Automated deployment from Jenkins build ${BUILD_NUMBER}"
+                --logdeployment
 
                 echo "✅ Deployment record sent to Ortelius"
                 '''
