@@ -119,11 +119,13 @@ pipeline {
                 export DHURL=${DHURL}
                 export DHUSER=${DHUSER}
                 export DHPASS=${DHPASS}
-                ./dh createDeploy \
+
+                ./dh deploy \
                 --app GLOBAL.CICD.NotesApp \
                 --env GLOBAL.CICD.Dev \
                 --comp GLOBAL.CICD.NotesWebApp \
                 --desc "Automated deployment from Jenkins build ${BUILD_NUMBER}"
+
                 echo "✅ Deployment record sent to Ortelius"
                 '''
             }
