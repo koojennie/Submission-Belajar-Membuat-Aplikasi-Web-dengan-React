@@ -121,9 +121,10 @@ pipeline {
                 export DHPASS=${DHPASS}
 
                 ./dh deploy \
-                --app GLOBAL.CICD.NotesApp \
-                --env GLOBAL.CICD.Dev \
-                --comp GLOBAL.CICD.NotesWebApp \
+                --appname GLOBAL.CICD.NotesApp \
+                --appversion 1.0.0 \
+                --deployenv GLOBAL.CICD.Dev \
+                --logdeployment \
                 --desc "Automated deployment from Jenkins build ${BUILD_NUMBER}"
 
                 echo "✅ Deployment record sent to Ortelius"
