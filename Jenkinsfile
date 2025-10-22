@@ -116,7 +116,14 @@ pipeline {
             steps {
                 echo "Deploying component to Ortelius Environment..."
                 sh '''
-                ./dh deploycomp --app GLOBAL.CICD.NotesApp --env GLOBAL.CICD.Dev --comp GLOBAL.CICD.NotesWebApp
+                export DHURL=${DHURL}
+                export DHUSER=${DHUSER}
+                export DHPASS=${DHPASS}
+                ./dh createDeploy \
+                --app GLOBAL.CICD.NotesApp \
+                --env GLOBAL.CICD.Dev \
+                --comp GLOBAL.CICD.NotesWebApp \
+                --desc "Automated deployment from Jenkins build ${BUILD_NUMBER}"
                 echo "✅ Deployment record sent to Ortelius"
                 '''
             }
