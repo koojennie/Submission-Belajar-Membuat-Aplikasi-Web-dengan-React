@@ -1,0 +1,16 @@
+# Application Name and Version
+Application = "GLOBAL.CICD.NotesApp"
+Application_Version = "1.0.0"
+
+# Component info
+Name = "GLOBAL.CICD.NotesWebApp"
+Variant = "${GIT_BRANCH}"
+Version = "v1.0.${BUILD_NUM}-g${SHORT_SHA}"
+
+[Attributes]
+    GitRepo = "https://github.com/koojennie/Submission-Belajar-Membuat-Aplikasi-Web-dengan-React"
+    GitCommit = "${GIT_COMMIT}"
+    DockerRepo = "${DOCKERREPO}"
+    DockerTag = "${IMAGE_TAG}"
+    ServiceOwner = "${DHUSER}"
+    ServiceOwnerEmail = "togetherforever1404@gmail.com"
