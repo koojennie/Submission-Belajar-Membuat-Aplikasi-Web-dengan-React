@@ -10,6 +10,7 @@ pipeline {
         // Komponen & docker info (kalau tidak pakai docker, bisa dikosongkan)
         DOCKERREPO = "none"
         IMAGE_TAG = "1.0.${BUILD_NUMBER}"
+        GITHUB_TOKEN = credentials('github-token')
     }
 
     stages {
@@ -38,7 +39,11 @@ pipeline {
                 curl -L https://github.com/ossf/scorecard/releases/download/v5.3.0/scorecard_5.3.0_linux_amd64.tar.gz -o scorecard.tar.gz
                 tar -xzf scorecard.tar.gz
                 chmod +x scorecard
-                ./scorecard --repo=${GIT_URL} --format json > scorecard.json
+                GITHUB_AUTH_TOKEN=${GITHUB_TOKEN} ./scorecard \
+                    --repo=${GIT_URL} \
+                    --format json \
+                    --show-details \
+                    > scorecard.json
                 echo "✅ OpenSSF Scorecard completed and saved to scorecard.json"
                 '''
             }
