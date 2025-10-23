@@ -110,7 +110,7 @@ pipeline {
                 
                 if ! ./dh getenv --name GLOBAL.CICD.Dev >/dev/null 2>&1; then
                     echo "Environment not found, creating GLOBAL.CICD.Dev..."
-                    ./dh add --type environment --name Dev --domain GLOBAL.CICD --owner admin
+                    ./dh addenv --envname Dev --domain GLOBAL.CICD --owner admin
                 else
                     echo "Environment already exists."
                 fi
