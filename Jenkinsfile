@@ -100,6 +100,24 @@ pipeline {
             }
         }
 
+        stage('Ensure Ortelius Environment Exists') {
+            steps {
+                echo "Ensuring Ortelius environment exists..."
+                sh '''
+                export DHURL=${DHURL}
+                export DHUSER=${DHUSER}
+                export DHPASS=${DHPASS}
+                
+                if ! ./dh getenv --name GLOBAL.CICD.Dev >/dev/null 2>&1; then
+                    echo "Environment not found, creating GLOBAL.CICD.Dev..."
+                    ./dh add --type environment --name Dev --domain GLOBAL.CICD --owner admin
+                else
+                    echo "Environment already exists."
+                fi
+                '''
+            }
+        }
+
         stage('Publish to Ortelius') {
             steps {
                 echo "Publishing component and SBOM to Ortelius..."
@@ -121,10 +139,10 @@ pipeline {
                 export DHPASS=${DHPASS}
 
                 ./dh deploy \
-                --appname GLOBAL.CICD.NotesApp \
-                --appversion 1.0.0 \
-                --deployenv GLOBAL.CICD.Dev \
-                --logdeployment
+                    --appname GLOBAL.CICD.NotesApp \
+                    --appversion 1.0.0 \
+                    --deployenv GLOBAL.CICD.Dev \
+                    --logdeployment
 
                 echo "✅ Deployment record sent to Ortelius"
                 '''
