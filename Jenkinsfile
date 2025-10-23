@@ -104,15 +104,53 @@ pipeline {
             steps {
                 echo "Ensuring Ortelius environment exists..."
                 sh '''
+                set -e
                 export DHURL=${DHURL}
                 export DHUSER=${DHUSER}
                 export DHPASS=${DHPASS}
-                
-                if ! ./dh getenv --name GLOBAL.CICD.Dev >/dev/null 2>&1; then
-                    echo "Environment not found, creating GLOBAL.CICD.Dev..."
-                    ./dh environment.create --envname Dev --domain GLOBAL.CICD --owner admin
+
+                # 1) Kalau sudah ada, selesai
+                if ./dh getenv --name GLOBAL.CICD.Dev >/dev/null 2>&1; then
+                echo "Environment already exists: GLOBAL.CICD.Dev"
+                exit 0
+                fi
+
+                echo "Environment not found, trying to create GLOBAL.CICD.Dev..."
+
+                # 2) Deteksi perintah pembuatan environment berdasarkan versi CLI
+                if ./dh --help 2>&1 | grep -q "environment.create"; then
+                echo "Using: environment.create"
+                ./dh environment.create --envname Dev --domain GLOBAL.CICD --owner admin
+
+                elif ./dh --help 2>&1 | grep -q "^\\s*addenv\\b"; then
+                echo "Using: addenv"
+                ./dh addenv --envname Dev --domain GLOBAL.CICD --owner admin
+
+                elif ./dh --help 2>&1 | grep -q "\\bcreateenv\\b"; then
+                echo "Using: createenv"
+                ./dh createenv --envname Dev --domain GLOBAL.CICD --owner admin
+
+                elif ./dh --help 2>&1 | grep -q "\\bupdateenv\\b"; then
+                echo "Using: updateenv (create-if-missing)"
+                ./dh updateenv --envname Dev --domain GLOBAL.CICD --owner admin
+
+                elif ./dh --help 2>&1 | grep -q "\\badd\\b"; then
+                echo "Using: add --type environment"
+                ./dh add --type environment --name Dev --domain GLOBAL.CICD --owner admin
+
                 else
-                    echo "Environment already exists."
+                echo "❌ No known env-create command found in this CLI build."
+                echo "Available commands:"
+                ./dh --help || true
+                exit 1
+                fi
+
+                # 3) Verifikasi lagi
+                if ./dh getenv --name GLOBAL.CICD.Dev >/dev/null 2>&1; then
+                echo "✅ Environment created: GLOBAL.CICD.Dev"
+                else
+                echo "❌ Failed to verify environment creation."
+                exit 1
                 fi
                 '''
             }
