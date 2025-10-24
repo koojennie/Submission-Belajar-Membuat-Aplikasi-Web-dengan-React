@@ -84,7 +84,6 @@ Version = "v1.0.0.${env.BUILD_NUMBER}-g${env.SHORT_SHA}"
         sh '''
           curl -L https://github.com/ortelius/ortelius-cli/releases/download/v9.3.283/ortelius-linux-amd64.tar.gz -o dh.tar.gz
           tar -xvf dh.tar.gz && chmod +x ortelius && mv ortelius dh
-          ./dh --version
         '''
       }
     }
