@@ -111,24 +111,5 @@ pipeline {
                 '''
             }
         }
-
-        stage('Deploy to Environment in Ortelius') {
-            steps {
-                echo "Deploying component to Ortelius Environment..."
-                sh '''
-                export DHURL=${DHURL}
-                export DHUSER=${DHUSER}
-                export DHPASS=${DHPASS}
-
-                ./dh deploy \
-                    --appname GLOBAL.CICD.NotesApp \
-                    --appversion 1.0.0 \
-                    --deployenv GLOBAL.CICD.Dev \
-                    --logdeployment
-
-                echo "✅ Deployment record sent to Ortelius"
-                '''
-            }
-        }
     }
 }
