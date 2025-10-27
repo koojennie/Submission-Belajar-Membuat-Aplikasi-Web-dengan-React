@@ -34,16 +34,31 @@ pipeline {
         stage('Run OpenSSF Scorecard') {
             steps {
                 sh '''
+                echo "📥 Downloading OpenSSF Scorecard..."
                 curl -L https://github.com/ossf/scorecard/releases/download/v5.3.0/scorecard_5.3.0_linux_amd64.tar.gz -o scorecard.tar.gz
                 tar -xzf scorecard.tar.gz && chmod +x scorecard
+
+                echo "🏃 Running Scorecard scan..."
                 GITHUB_AUTH_TOKEN=${GITHUB_TOKEN} ./scorecard \
-                    --repo=${GIT_URL} --format json --show-details > raw_scorecard.json
-                test -s raw_scorecard.json || { echo "❌ scorecard.json empty!"; exit 1; }
+                    --repo=${GIT_URL} --format json --show-details > raw_scorecard.json || true
 
-                # Flatten JSON for Ortelius v9.3.x compatibility
-                cat raw_scorecard.json | jq '[.scorecard.checks[] | {check: .name, score: .score, details: .reason}]' > scorecard.json
+                if [ ! -s raw_scorecard.json ]; then
+                echo "❌ scorecard.json empty or failed to generate!"
+                exit 1
+                fi
 
-                echo "✅ OpenSSF Scorecard completed successfully."
+                echo "🧩 Normalizing JSON structure..."
+                # Try to handle both possible structures (v4 and v5)
+                if jq -e '.scorecard.checks' raw_scorecard.json >/dev/null 2>&1; then
+                jq '[.scorecard.checks[] | {check: .name, score: .score, details: .reason}]' raw_scorecard.json > scorecard.json
+                elif jq -e '.checks' raw_scorecard.json >/dev/null 2>&1; then
+                jq '[.checks[] | {check: .name, score: .score, details: .reason}]' raw_scorecard.json > scorecard.json
+                else
+                echo "⚠️ Unknown JSON format. Keeping original raw_scorecard.json."
+                cp raw_scorecard.json scorecard.json
+                fi
+
+                echo "✅ OpenSSF Scorecard JSON ready."
                 '''
             }
         }
