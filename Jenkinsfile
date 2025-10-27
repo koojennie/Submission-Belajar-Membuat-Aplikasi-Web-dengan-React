@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DHURL  = "http://54.224.156.24/"
+        DHURL  = "http://54.196.55.208/"
         DHUSER = "admin"
         DHPASS = "admin"
 
