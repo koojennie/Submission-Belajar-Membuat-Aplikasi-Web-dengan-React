@@ -37,8 +37,12 @@ pipeline {
                 curl -L https://github.com/ossf/scorecard/releases/download/v5.3.0/scorecard_5.3.0_linux_amd64.tar.gz -o scorecard.tar.gz
                 tar -xzf scorecard.tar.gz && chmod +x scorecard
                 GITHUB_AUTH_TOKEN=${GITHUB_TOKEN} ./scorecard \
-                    --repo=${GIT_URL} --format json --show-details > scorecard.json
-                test -s scorecard.json || { echo "❌ scorecard.json empty!"; exit 1; }
+                    --repo=${GIT_URL} --format json --show-details > raw_scorecard.json
+                test -s raw_scorecard.json || { echo "❌ scorecard.json empty!"; exit 1; }
+
+                # Flatten JSON for Ortelius v9.3.x compatibility
+                cat raw_scorecard.json | jq '[.scorecard.checks[] | {check: .name, score: .score, details: .reason}]' > scorecard.json
+
                 echo "✅ OpenSSF Scorecard completed successfully."
                 '''
             }
